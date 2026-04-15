@@ -197,6 +197,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
         let currentMethod = 'scanner';
         let videoDevices = [];
         let currentDeviceIndex = 0;
+        let initializedIndex = false;
 
         function switchTab(t) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
@@ -227,14 +228,22 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
         function resetVerificationMethod() { setVerifyMethod(currentMethod); }
 
         async function getDevices() {
-            if (videoDevices.length > 0) return;
             try {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 videoDevices = devices.filter(d => d.kind === 'videoinput');
+                
+                const btn = document.getElementById('btn-switch-camera');
                 if (videoDevices.length > 1) {
-                    document.getElementById('btn-switch-camera').classList.remove('hidden');
-                    // On initialise l'index à 1 pour la caméra arrière par défaut si dispo
-                    currentDeviceIndex = 1;
+                    btn.classList.remove('hidden');
+                    // On privilégie la caméra 2 (index 1) au premier chargement si disponible
+                    if (!initializedIndex) {
+                        currentDeviceIndex = 1;
+                        initializedIndex = true;
+                        // On relance pour appliquer le changement d'index
+                        await startCamera();
+                    }
+                } else {
+                    btn.classList.add('hidden');
                 }
             } catch (e) {
                 console.error("Erreur enumeration caméras");
@@ -249,17 +258,17 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
 
         async function startCamera() {
             if (isScanning) stopCamera(); 
-            await getDevices();
             const status = document.getElementById('scanner-status');
             status.innerText = "Accès caméra...";
             
             try {
-                const selectedDevice = videoDevices[currentDeviceIndex] || videoDevices[0];
+                const selectedDevice = videoDevices[currentDeviceIndex] || null;
                 const constraints = {
                     video: {
                         deviceId: selectedDevice ? { exact: selectedDevice.deviceId } : undefined,
                         width: { ideal: 1280 },
-                        height: { ideal: 1280 }
+                        height: { ideal: 1280 },
+                        facingMode: selectedDevice ? undefined : "environment"
                     }
                 };
 
@@ -269,8 +278,16 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 isScanning = true;
                 requestAnimationFrame(tick);
                 status.innerText = "Scan actif";
+                
+                // On détecte les caméras après avoir eu la permission ( labels visibles )
+                await getDevices();
             } catch (err) { 
-                status.innerText = "Vérifiez les permissions."; 
+                status.innerText = "Caméra bloquée."; 
+                // Fallback si la caméra demandée échoue
+                if (currentDeviceIndex !== 0) {
+                    currentDeviceIndex = 0;
+                    startCamera();
+                }
             }
         }
 
