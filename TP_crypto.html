@@ -67,14 +67,16 @@
                 <div id="gen-results" class="hidden space-y-8 result-animate">
                     <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col items-center text-center">
                         <p class="text-[11px] font-black uppercase text-gray-400 mb-8 tracking-widest">QR Code Officiel</p>
+                        
                         <div id="qrcode-container" class="bg-white p-6 border border-gray-50 rounded-3xl shadow-inner mb-6">
                             <canvas id="gen-qrcode-canvas" class="w-full h-auto rounded-xl"></canvas>
                         </div>
+                        
                         <button onclick="downloadQRCode()" class="w-full bg-blue-50 text-blue-700 py-5 rounded-2xl text-xs font-black uppercase tracking-widest transition hover:bg-blue-100 mb-8">Enregistrer l'image</button>
                         
-                        <div class="w-full text-left">
-                            <p class="text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">Contenu brut du QR Code</p>
-                            <div id="gen-payload-display" class="code-block text-xs"></div>
+                        <div class="w-full text-left bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
+                            <p class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center">Contenu du certificat (Texte;Signature)</p>
+                            <div id="gen-payload-display" class="code-block text-center text-gray-900 font-semibold"></div>
                         </div>
                     </div>
                 </div>
@@ -227,7 +229,6 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
             try {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                // Force caméra 2 (index 1) si dispo
                 const selectedDevice = videoDevices.length > 1 ? videoDevices[1] : videoDevices[0];
                 
                 const constraints = {
@@ -286,7 +287,6 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
                     
-                    // On garde une résolution élevée pour la détection
                     canvas.width = img.width;
                     canvas.height = img.height;
                     context.drawImage(img, 0, 0);
@@ -297,7 +297,6 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     if (code && code.data) {
                         showScannedData(code.data);
                     } else {
-                        // Tentative avec redimensionnement si echec (jsQR bloque parfois sur trop de pixels)
                         const maxDim = 1000;
                         const ratio = Math.min(maxDim / img.width, maxDim / img.height);
                         canvas.width = img.width * ratio;
@@ -309,7 +308,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                         if (code2 && code2.data) {
                             showScannedData(code2.data);
                         } else {
-                            alert("QR Code non détecté. Vérifiez que l'image est nette.");
+                            alert("QR Code non détecté.");
                             document.getElementById('upload-preview-container').classList.add('hidden');
                         }
                     }
@@ -336,13 +335,13 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const sigHex = forge.util.bytesToHex(signature);
                 const payload = `${data};${sigHex}`;
                 
-                const qr = qrcode(0, 'M'); // Correction du niveau de correction d'erreur
+                const qr = qrcode(0, 'M'); 
                 qr.addData(payload);
                 qr.make();
                 
                 const canvas = document.getElementById('gen-qrcode-canvas');
-                const cellSize = 10;
-                const margin = cellSize * 4; // Zone blanche obligatoire pour la détection
+                const cellSize = 12;
+                const margin = cellSize * 4; 
                 const size = qr.getModuleCount() * cellSize + margin * 2;
                 
                 canvas.width = size;
