@@ -141,14 +141,9 @@
                     <button onclick="executeVerification()" class="btn-primary w-full py-4 text-xs font-bold uppercase tracking-widest rounded-xl">Lancer l'analyse</button>
                 </div>
 
-                <div id="verification-flow" class="hidden mt-12 space-y-6 border-t border-gray-100 pt-12 result-animate">
+                <div id="verification-flow" class="hidden mt-12 space-y-8 border-t border-gray-100 pt-12 result-animate">
                     <div id="v-result" class="p-10 rounded-3xl text-center font-black text-xl tracking-widest border-4 transition-all shadow-xl"></div>
                     
-                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                        <p class="text-[10px] font-bold text-blue-600 uppercase mb-3 tracking-widest">Message certifié</p>
-                        <div id="v-clear-text" class="text-sm font-medium text-blue-900 break-all"></div>
-                    </div>
-
                     <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                         <p class="text-[10px] font-bold text-gray-400 uppercase mb-3 tracking-widest">Signature numérique complète</p>
                         <div id="v-full-signature" class="code-block text-[9px] break-all text-gray-500 italic"></div>
@@ -407,7 +402,6 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const publicKey = forge.pki.publicKeyFromPem(PUB_KEY_PEM);
                 const isValid = publicKey.verify(digest.bytes(), sigBytes);
                 
-                document.getElementById('v-clear-text').innerText = dataPart;
                 document.getElementById('v-full-signature').innerText = signaturePart;
                 const flow = document.getElementById('verification-flow');
                 const resBox = document.getElementById('v-result');
