@@ -53,7 +53,7 @@
             <div class="space-y-10">
                 <div class="text-center sm:text-left">
                     <h2 class="text-3xl font-black mb-4 uppercase tracking-tighter">Certification</h2>
-                    <p class="text-gray-500 text-sm leading-relaxed max-w-lg">Signature RSA-1024 avec hachage SHA-256 standard.</p>
+                    <p class="text-gray-500 text-sm leading-relaxed max-w-lg">Signature RSA-1024 optimisée en Base64 pour des QR Codes plus légers.</p>
                 </div>
                 
                 <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-8">
@@ -61,12 +61,12 @@
                         <label class="block text-[11px] font-black uppercase text-gray-400 tracking-widest">Contenu à certifier</label>
                         <textarea id="prod-id" rows="3" class="w-full bg-gray-50 rounded-2xl p-5 focus:ring-2 focus:ring-black outline-none transition-all font-medium text-base border-0">Test - produit 1 - Certifié par TracemeNOT</textarea>
                     </div>
-                    <button id="btn-generate" onclick="generate()" class="btn-primary w-full py-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl">Générer le certificat</button>
+                    <button id="btn-generate" onclick="generate()" class="btn-primary w-full py-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl">Générer le certificat optimisé</button>
                 </div>
 
                 <div id="gen-results" class="hidden space-y-8 result-animate">
                     <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col items-center text-center">
-                        <p class="text-[11px] font-black uppercase text-gray-400 mb-8 tracking-widest">QR Code Officiel</p>
+                        <p class="text-[11px] font-black uppercase text-gray-400 mb-8 tracking-widest">QR Code Officiel (Base64)</p>
                         
                         <div id="qrcode-container" class="bg-white p-6 border border-gray-50 rounded-3xl shadow-inner mb-6">
                             <canvas id="gen-qrcode-canvas" class="w-full h-auto rounded-xl"></canvas>
@@ -75,7 +75,7 @@
                         <button onclick="downloadQRCode()" class="w-full bg-blue-50 text-blue-700 py-5 rounded-2xl text-xs font-black uppercase tracking-widest transition hover:bg-blue-100 mb-8">Enregistrer l'image</button>
                         
                         <div class="w-full text-left bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
-                            <p class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center">Contenu du certificat (Texte;Signature)</p>
+                            <p class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center">Contenu du certificat (Optimisé)</p>
                             <div id="gen-payload-display" class="code-block text-center text-gray-900 font-semibold"></div>
                         </div>
                     </div>
@@ -118,13 +118,13 @@
                 </div>
 
                 <div id="input-manual" class="hidden space-y-6">
-                    <textarea id="v-payload-input" rows="6" placeholder="Message;SignatureHex" class="w-full bg-gray-50 rounded-[2rem] p-6 font-mono text-xs border-0 outline-none focus:ring-2 focus:ring-black"></textarea>
+                    <textarea id="v-payload-input" rows="6" placeholder="Message;Signature" class="w-full bg-gray-50 rounded-[2rem] p-6 font-mono text-xs border-0 outline-none focus:ring-2 focus:ring-black"></textarea>
                     <button onclick="executeVerification()" class="btn-primary w-full py-6 rounded-2xl text-xs font-black uppercase tracking-widest">Lancer l'analyse</button>
                 </div>
 
                 <div id="scanned-preview" class="hidden space-y-6 result-animate">
                     <div class="bg-blue-50 p-8 rounded-[2.5rem] border border-blue-100 text-center">
-                        <p class="text-[11px] font-black text-blue-600 uppercase mb-5 tracking-widest">Données extraites</p>
+                        <p class="text-[11px] font-black text-blue-600 uppercase mb-5 tracking-widest">Code détecté avec succès</p>
                         <button onclick="executeVerification()" class="w-full bg-blue-600 text-white font-black py-6 rounded-2xl text-xs uppercase tracking-widest shadow-xl">Vérifier maintenant</button>
                         <button onclick="resetVerificationMethod()" class="w-full mt-4 text-[10px] font-bold text-blue-400 uppercase tracking-widest">Recommencer</button>
                     </div>
@@ -134,14 +134,14 @@
                     <div id="v-result" class="p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 shadow-2xl"></div>
                     
                     <div class="space-y-6">
-                        <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
-                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Contenu authentifié</p>
-                            <div id="v-clear-text" class="text-lg font-bold text-gray-900 text-center leading-tight"></div>
+                        <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 text-center">
+                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Contenu authentifié</p>
+                            <div id="v-clear-text" class="text-lg font-bold text-gray-900 leading-tight"></div>
                         </div>
 
-                        <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 overflow-hidden">
-                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Signature sécurisée</p>
-                            <div id="v-full-signature" class="code-block text-xs leading-relaxed text-center"></div>
+                        <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 overflow-hidden text-center">
+                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Signature sécurisée</p>
+                            <div id="v-full-signature" class="code-block text-xs leading-relaxed"></div>
                         </div>
                     </div>
                 </div>
@@ -209,8 +209,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
         function setVerifyMethod(m) {
             currentMethod = m;
             document.querySelectorAll('.verify-method-btn').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById('method-'+m);
-            if (btn) btn.classList.add('active');
+            document.getElementById('method-'+m).classList.add('active');
             document.getElementById('input-scanner').classList.toggle('hidden', m !== 'scanner');
             document.getElementById('input-upload').classList.toggle('hidden', m !== 'upload');
             document.getElementById('input-manual').classList.toggle('hidden', m !== 'manual');
@@ -288,20 +287,16 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
                     
-                    // On privilégie la résolution native de l'image pour l'analyse
                     canvas.width = img.width;
                     canvas.height = img.height;
                     context.drawImage(img, 0, 0);
                     
                     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    // Tentative 1 : Image brute
                     let code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
                     
                     if (code && code.data) {
                         showScannedData(code.data);
                     } else {
-                        // Tentative 2 : Avec redimensionnement pour aider jsQR si l'image est trop grande
                         const maxDim = 1000;
                         const ratio = Math.min(maxDim / img.width, maxDim / img.height);
                         canvas.width = img.width * ratio;
@@ -313,20 +308,8 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                         if (code2 && code2.data) {
                             showScannedData(code2.data);
                         } else {
-                            // Tentative 3 : Grayscale + Contraste
-                            const data = imageData.data;
-                            for (let i = 0; i < data.length; i += 4) {
-                                const avg = (data[i] + data[i+1] + data[i+2]) / 3;
-                                const val = avg > 127 ? 255 : 0;
-                                data[i] = data[i+1] = data[i+2] = val;
-                            }
-                            const code3 = jsQR(data, img.width, img.height, { inversionAttempts: "attemptBoth" });
-                            if (code3 && code3.data) {
-                                showScannedData(code3.data);
-                            } else {
-                                alert("QR Code non détecté. Assurez-vous que l'image est bien cadrée.");
-                                document.getElementById('upload-preview-container').classList.add('hidden');
-                            }
+                            alert("QR Code non détecté.");
+                            document.getElementById('upload-preview-container').classList.add('hidden');
                         }
                     }
                 };
@@ -349,15 +332,17 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const digest = md.digest();
                 const privateKey = forge.pki.privateKeyFromPem(PRIV_KEY_PEM);
                 const signature = privateKey.sign(md);
-                const sigHex = forge.util.bytesToHex(signature);
-                const payload = `${data};${sigHex}`;
+                
+                // Utilisation du Base64 au lieu de l'Hex pour réduire la densité
+                const sigB64 = forge.util.encode64(signature);
+                const payload = `${data};${sigB64}`;
                 
                 const qr = qrcode(0, 'M'); 
                 qr.addData(payload);
                 qr.make();
                 
                 const canvas = document.getElementById('gen-qrcode-canvas');
-                const cellSize = 12;
+                const cellSize = 10;
                 const margin = cellSize * 4; 
                 const size = qr.getModuleCount() * cellSize + margin * 2;
                 
@@ -378,7 +363,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 
                 document.getElementById('gen-payload-display').innerText = payload;
                 document.getElementById('gen-results').classList.remove('hidden');
-            } catch (e) { alert("Erreur lors de la signature."); }
+            } catch (e) { alert("Erreur signature."); }
         }
 
         function downloadQRCode() {
@@ -394,7 +379,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
             if (!payload) return;
             let lastIndex = payload.lastIndexOf(';');
             if (lastIndex === -1) lastIndex = payload.lastIndexOf('||');
-            if (lastIndex === -1) { alert("Format de données invalide."); return; }
+            if (lastIndex === -1) { alert("Format invalide."); return; }
             let dataPart = payload.substring(0, lastIndex);
             let signaturePart = payload.substring(lastIndex + 1).replace(/[\n\r\s]/g, '');
 
@@ -402,7 +387,15 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const md = forge.md.sha256.create();
                 md.update(dataPart, 'utf8');
                 const digest = md.digest();
-                let sigBytes = /^[0-9a-fA-F]+$/.test(signaturePart) ? forge.util.hexToBytes(signaturePart) : forge.util.decode64(signaturePart);
+                
+                let sigBytes;
+                // Détection intelligente : Base64 ou Hex
+                if (/^[0-9a-fA-F]+$/.test(signaturePart) && signaturePart.length === 256) {
+                    sigBytes = forge.util.hexToBytes(signaturePart);
+                } else {
+                    sigBytes = forge.util.decode64(signaturePart);
+                }
+                
                 const publicKey = forge.pki.publicKeyFromPem(PUB_KEY_PEM);
                 const isValid = publicKey.verify(digest.bytes(), sigBytes);
                 
@@ -420,7 +413,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     resBox.className = "p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 border-red-500 bg-red-50 text-red-700 uppercase shadow-2xl";
                 }
                 flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (e) { alert("Erreur lors de l'analyse du scellé."); }
+            } catch (e) { alert("Erreur d'analyse."); }
         }
 
         window.onload = () => {
