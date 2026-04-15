@@ -125,7 +125,7 @@
                 <div id="scanned-preview" class="hidden space-y-6 result-animate">
                     <div class="bg-blue-50 p-8 rounded-[2.5rem] border border-blue-100 text-center">
                         <p class="text-[11px] font-black text-blue-600 uppercase mb-5 tracking-widest">Données extraites</p>
-                        <button onclick="executeVerification()" class="w-full bg-blue-600 text-white font-black py-6 rounded-2xl text-xs uppercase tracking-widest shadow-lg">Vérifier maintenant</button>
+                        <button onclick="executeVerification()" class="w-full bg-blue-600 text-white font-black py-6 rounded-2xl text-xs uppercase tracking-widest shadow-xl">Vérifier maintenant</button>
                         <button onclick="resetVerificationMethod()" class="w-full mt-4 text-[10px] font-bold text-blue-400 uppercase tracking-widest">Recommencer</button>
                     </div>
                 </div>
@@ -135,13 +135,13 @@
                     
                     <div class="space-y-6">
                         <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
-                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Contenu authentifié</p>
-                            <div id="v-clear-text" class="text-lg font-bold text-gray-900 leading-tight"></div>
+                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Contenu authentifié</p>
+                            <div id="v-clear-text" class="text-lg font-bold text-gray-900 text-center leading-tight"></div>
                         </div>
 
                         <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 overflow-hidden">
-                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Signature sécurisée</p>
-                            <div id="v-full-signature" class="code-block text-xs leading-relaxed"></div>
+                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Signature sécurisée</p>
+                            <div id="v-full-signature" class="code-block text-xs leading-relaxed text-center"></div>
                         </div>
                     </div>
                 </div>
@@ -209,7 +209,8 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
         function setVerifyMethod(m) {
             currentMethod = m;
             document.querySelectorAll('.verify-method-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('method-'+m).classList.add('active');
+            const btn = document.getElementById('method-'+m);
+            if (btn) btn.classList.add('active');
             document.getElementById('input-scanner').classList.toggle('hidden', m !== 'scanner');
             document.getElementById('input-upload').classList.toggle('hidden', m !== 'upload');
             document.getElementById('input-manual').classList.toggle('hidden', m !== 'manual');
@@ -287,16 +288,20 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
                     
+                    // On privilégie la résolution native de l'image pour l'analyse
                     canvas.width = img.width;
                     canvas.height = img.height;
                     context.drawImage(img, 0, 0);
                     
                     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
+                    
+                    // Tentative 1 : Image brute
+                    let code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
                     
                     if (code && code.data) {
                         showScannedData(code.data);
                     } else {
+                        // Tentative 2 : Avec redimensionnement pour aider jsQR si l'image est trop grande
                         const maxDim = 1000;
                         const ratio = Math.min(maxDim / img.width, maxDim / img.height);
                         canvas.width = img.width * ratio;
@@ -308,8 +313,20 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                         if (code2 && code2.data) {
                             showScannedData(code2.data);
                         } else {
-                            alert("QR Code non détecté.");
-                            document.getElementById('upload-preview-container').classList.add('hidden');
+                            // Tentative 3 : Grayscale + Contraste
+                            const data = imageData.data;
+                            for (let i = 0; i < data.length; i += 4) {
+                                const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+                                const val = avg > 127 ? 255 : 0;
+                                data[i] = data[i+1] = data[i+2] = val;
+                            }
+                            const code3 = jsQR(data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+                            if (code3 && code3.data) {
+                                showScannedData(code3.data);
+                            } else {
+                                alert("QR Code non détecté. Assurez-vous que l'image est bien cadrée.");
+                                document.getElementById('upload-preview-container').classList.add('hidden');
+                            }
                         }
                     }
                 };
@@ -361,7 +378,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 
                 document.getElementById('gen-payload-display').innerText = payload;
                 document.getElementById('gen-results').classList.remove('hidden');
-            } catch (e) { alert("Erreur signature."); }
+            } catch (e) { alert("Erreur lors de la signature."); }
         }
 
         function downloadQRCode() {
@@ -377,7 +394,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
             if (!payload) return;
             let lastIndex = payload.lastIndexOf(';');
             if (lastIndex === -1) lastIndex = payload.lastIndexOf('||');
-            if (lastIndex === -1) { alert("Format invalide."); return; }
+            if (lastIndex === -1) { alert("Format de données invalide."); return; }
             let dataPart = payload.substring(0, lastIndex);
             let signaturePart = payload.substring(lastIndex + 1).replace(/[\n\r\s]/g, '');
 
@@ -403,7 +420,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     resBox.className = "p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 border-red-500 bg-red-50 text-red-700 uppercase shadow-2xl";
                 }
                 flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (e) { alert("Erreur d'analyse."); }
+            } catch (e) { alert("Erreur lors de l'analyse du scellé."); }
         }
 
         window.onload = () => {
