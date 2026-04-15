@@ -49,11 +49,12 @@
 
     <main class="max-w-4xl mx-auto px-6 py-10">
 
+        <!-- TAB USINE -->
         <div id="tab-portal" class="tab-content">
             <div class="space-y-10">
                 <div class="text-center sm:text-left">
                     <h2 class="text-3xl font-black mb-4 uppercase tracking-tighter">Certification</h2>
-                    <p class="text-gray-500 text-sm leading-relaxed max-w-lg">Signature RSA-1024 optimisée en Base64 pour des QR Codes plus légers.</p>
+                    <p class="text-gray-500 text-sm leading-relaxed max-w-lg">Signature RSA-1024 optimisée en Base64 pour des QR Codes lisibles.</p>
                 </div>
                 
                 <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-8">
@@ -61,12 +62,12 @@
                         <label class="block text-[11px] font-black uppercase text-gray-400 tracking-widest">Contenu à certifier</label>
                         <textarea id="prod-id" rows="3" class="w-full bg-gray-50 rounded-2xl p-5 focus:ring-2 focus:ring-black outline-none transition-all font-medium text-base border-0">Test - produit 1 - Certifié par TracemeNOT</textarea>
                     </div>
-                    <button id="btn-generate" onclick="generate()" class="btn-primary w-full py-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl">Générer le certificat optimisé</button>
+                    <button id="btn-generate" onclick="generate()" class="btn-primary w-full py-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl">Générer le certificat</button>
                 </div>
 
                 <div id="gen-results" class="hidden space-y-8 result-animate">
                     <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col items-center text-center">
-                        <p class="text-[11px] font-black uppercase text-gray-400 mb-8 tracking-widest">QR Code Officiel (Base64)</p>
+                        <p class="text-[11px] font-black uppercase text-gray-400 mb-8 tracking-widest">QR Code Officiel</p>
                         
                         <div id="qrcode-container" class="bg-white p-6 border border-gray-50 rounded-3xl shadow-inner mb-6">
                             <canvas id="gen-qrcode-canvas" class="w-full h-auto rounded-xl"></canvas>
@@ -75,7 +76,7 @@
                         <button onclick="downloadQRCode()" class="w-full bg-blue-50 text-blue-700 py-5 rounded-2xl text-xs font-black uppercase tracking-widest transition hover:bg-blue-100 mb-8">Enregistrer l'image</button>
                         
                         <div class="w-full text-left bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
-                            <p class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center">Contenu du certificat (Optimisé)</p>
+                            <p class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center">Contenu du certificat</p>
                             <div id="gen-payload-display" class="code-block text-center text-gray-900 font-semibold"></div>
                         </div>
                     </div>
@@ -83,6 +84,7 @@
             </div>
         </div>
 
+        <!-- TAB CLIENT -->
         <div id="tab-verify" class="tab-content hidden">
             <div class="space-y-10">
                 <div class="text-center">
@@ -118,7 +120,7 @@
                 </div>
 
                 <div id="input-manual" class="hidden space-y-6">
-                    <textarea id="v-payload-input" rows="6" placeholder="Message;Signature" class="w-full bg-gray-50 rounded-[2rem] p-6 font-mono text-xs border-0 outline-none focus:ring-2 focus:ring-black"></textarea>
+                    <textarea id="v-payload-input" rows="6" placeholder="Message||Signature" class="w-full bg-gray-50 rounded-[2rem] p-6 font-mono text-xs border-0 outline-none focus:ring-2 focus:ring-black"></textarea>
                     <button onclick="executeVerification()" class="btn-primary w-full py-6 rounded-2xl text-xs font-black uppercase tracking-widest">Lancer l'analyse</button>
                 </div>
 
@@ -148,17 +150,24 @@
             </div>
         </div>
 
+        <!-- TAB INFOS -->
         <div id="tab-tech" class="tab-content hidden">
             <div class="space-y-10">
                 <h2 class="text-3xl font-black uppercase tracking-tighter text-center">Spécifications</h2>
                 <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
-                    <h3 class="font-black text-slate-900 text-[11px] uppercase tracking-widest">Clé Publique Certifiée (e)</h3>
+                    <h3 class="font-black text-slate-900 text-[11px] uppercase tracking-widest">Clé Publique Certifiée</h3>
                     <pre class="text-[10px] text-slate-500 overflow-x-auto leading-loose whitespace-pre-wrap">-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCnuVIqfC69hZCUC17uopNxb/Zv
 ntdBJkz0lG9WnmlJt+t/ze8zbtpHKqXr1g67/jEULIIwTyRIv4gnlMwugEqsJiGJ
 tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
 +gWbpxf7O2+nPD0Z3wIDAQAB
 -----END PUBLIC KEY-----</pre>
+                </div>
+                <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-4">
+                    <h3 class="font-black text-slate-900 text-[11px] uppercase tracking-widest">Format du payload QR</h3>
+                    <p class="text-sm text-slate-500">Le séparateur entre le message et la signature est <code class="bg-white px-2 py-1 rounded font-mono text-xs">||</code> (double pipe), impossible à confondre avec du Base64.</p>
+                    <p class="text-sm text-slate-500">Niveau de correction d'erreur : <strong>L</strong> (7 %) pour maximiser la capacité.</p>
+                    <p class="text-sm text-slate-500">Taille des modules : <strong>14 px</strong> pour garantir la lisibilité à l'import.</p>
                 </div>
             </div>
         </div>
@@ -189,48 +198,60 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
 +gWbpxf7O2+nPD0Z3wIDAQAB
 -----END PUBLIC KEY-----`;
 
+        // ─── Séparateur unique, impossible dans Base64 ───
+        const SEP = '||';
+
         let stream = null;
         let isScanning = false;
         let currentMethod = 'scanner';
 
+        // ────────────────────────────────────────────────
+        // Navigation
+        // ────────────────────────────────────────────────
         function switchTab(t) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById('tab-'+t).classList.remove('hidden');
+            document.getElementById('tab-' + t).classList.remove('hidden');
             document.querySelectorAll('#nav-portal, #nav-verify, #nav-tech').forEach(b => {
                 b.classList.remove('tab-active', 'text-gray-400');
                 b.classList.add('text-gray-400');
             });
-            const activeNav = document.getElementById('nav-'+t);
+            const activeNav = document.getElementById('nav-' + t);
             activeNav.classList.add('tab-active');
             activeNav.classList.remove('text-gray-400');
-            if (t === 'verify') setVerifyMethod(currentMethod); else stopCamera();
+            if (t === 'verify') setVerifyMethod(currentMethod);
+            else stopCamera();
         }
 
+        // ────────────────────────────────────────────────
+        // Méthodes de vérification
+        // ────────────────────────────────────────────────
         function setVerifyMethod(m) {
             currentMethod = m;
             document.querySelectorAll('.verify-method-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('method-'+m).classList.add('active');
+            document.getElementById('method-' + m).classList.add('active');
             document.getElementById('input-scanner').classList.toggle('hidden', m !== 'scanner');
             document.getElementById('input-upload').classList.toggle('hidden', m !== 'upload');
             document.getElementById('input-manual').classList.toggle('hidden', m !== 'manual');
             document.getElementById('scanned-preview').classList.add('hidden');
             document.getElementById('verification-flow').classList.add('hidden');
             document.getElementById('upload-preview-container').classList.add('hidden');
-            if (m === 'scanner') startCamera(); else stopCamera();
+            if (m === 'scanner') startCamera();
+            else stopCamera();
         }
 
         function resetVerificationMethod() { setVerifyMethod(currentMethod); }
 
+        // ────────────────────────────────────────────────
+        // Caméra / Scanner
+        // ────────────────────────────────────────────────
         async function startCamera() {
-            if (isScanning) stopCamera(); 
+            if (isScanning) stopCamera();
             const status = document.getElementById('scanner-status');
             status.innerText = "Accès caméra...";
-            
             try {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const videoDevices = devices.filter(d => d.kind === 'videoinput');
                 const selectedDevice = videoDevices.length > 1 ? videoDevices[1] : videoDevices[0];
-                
                 const constraints = {
                     video: {
                         deviceId: selectedDevice ? { exact: selectedDevice.deviceId } : undefined,
@@ -239,34 +260,33 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                         facingMode: selectedDevice ? undefined : "environment"
                     }
                 };
-
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
                 document.getElementById('video-stream').srcObject = stream;
                 isScanning = true;
                 requestAnimationFrame(tick);
                 status.innerText = "Scan actif";
-            } catch (err) { 
-                status.innerText = "Caméra bloquée."; 
+            } catch (err) {
+                status.innerText = "Caméra bloquée.";
             }
         }
 
-        function stopCamera() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } isScanning = false; }
+        function stopCamera() {
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            isScanning = false;
+        }
 
         function tick() {
             if (!isScanning) return;
             const video = document.getElementById('video-stream');
             const canvasElement = document.getElementById('scanner-canvas');
             const canvas = canvasElement.getContext("2d", { willReadFrequently: true });
-            
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvasElement.height = video.videoHeight;
                 canvasElement.width = video.videoWidth;
                 canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-                
                 const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
-                
-                if (code && code.data && (code.data.includes(';') || code.data.includes('||'))) {
+                if (code && code.data && code.data.includes(SEP)) {
                     stopCamera();
                     showScannedData(code.data);
                     return;
@@ -275,6 +295,9 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
             requestAnimationFrame(tick);
         }
 
+        // ────────────────────────────────────────────────
+        // Import fichier
+        // ────────────────────────────────────────────────
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -284,33 +307,39 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 img.onload = () => {
                     document.getElementById('upload-preview').src = e.target.result;
                     document.getElementById('upload-preview-container').classList.remove('hidden');
+
+                    // Essai 1 : taille originale
                     const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    
+                    const ctx = canvas.getContext('2d');
                     canvas.width = img.width;
                     canvas.height = img.height;
-                    context.drawImage(img, 0, 0);
-                    
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    let code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
-                    
+                    ctx.drawImage(img, 0, 0);
+                    let code = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
+
+                    // Essai 2 : redimensionné à 1500px max (meilleure résolution pour jsQR)
+                    if (!code || !code.data) {
+                        const maxDim = 1500;
+                        const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1);
+                        canvas.width = Math.round(img.width * ratio);
+                        canvas.height = Math.round(img.height * ratio);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        code = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
+                    }
+
+                    // Essai 3 : upscale x2 (aide jsQR sur les petites images)
+                    if (!code || !code.data) {
+                        canvas.width = img.width * 2;
+                        canvas.height = img.height * 2;
+                        ctx.imageSmoothingEnabled = false;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        code = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
+                    }
+
                     if (code && code.data) {
                         showScannedData(code.data);
                     } else {
-                        const maxDim = 1000;
-                        const ratio = Math.min(maxDim / img.width, maxDim / img.height);
-                        canvas.width = img.width * ratio;
-                        canvas.height = img.height * ratio;
-                        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const imageData2 = context.getImageData(0, 0, canvas.width, canvas.height);
-                        const code2 = jsQR(imageData2.data, canvas.width, canvas.height, { inversionAttempts: "attemptBoth" });
-                        
-                        if (code2 && code2.data) {
-                            showScannedData(code2.data);
-                        } else {
-                            alert("QR Code non détecté.");
-                            document.getElementById('upload-preview-container').classList.add('hidden');
-                        }
+                        alert("QR Code non détecté. Assurez-vous que l'image est nette et bien cadrée.");
+                        document.getElementById('upload-preview-container').classList.add('hidden');
                     }
                 };
                 img.src = e.target.result;
@@ -324,35 +353,43 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
             document.getElementById('scanned-preview').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
+        // ────────────────────────────────────────────────
+        // Génération
+        // ────────────────────────────────────────────────
         function generate() {
             try {
-                const data = document.getElementById('prod-id').value;
+                const data = document.getElementById('prod-id').value.trim();
+                if (!data) { alert("Veuillez saisir un contenu à certifier."); return; }
+
+                // Signature RSA-SHA256
                 const md = forge.md.sha256.create();
                 md.update(data, 'utf8');
-                const digest = md.digest();
                 const privateKey = forge.pki.privateKeyFromPem(PRIV_KEY_PEM);
                 const signature = privateKey.sign(md);
-                
-                // Utilisation du Base64 au lieu de l'Hex pour réduire la densité
+
+                // Base64 (plus court que hex, ~172 chars pour RSA-1024)
                 const sigB64 = forge.util.encode64(signature);
-                const payload = `${data};${sigB64}`;
-                
-                const qr = qrcode(0, 'L'); 
+
+                // Séparateur || : impossible dans Base64
+                const payload = `${data}${SEP}${sigB64}`;
+
+                // QR Code niveau L (capacité max) avec modules de 14px (lisibilité max)
+                const qr = qrcode(0, 'L');
                 qr.addData(payload);
                 qr.make();
-                
-                const canvas = document.getElementById('gen-qrcode-canvas');
-                const cellSize = 12;
-                const margin = cellSize * 4; 
+
+                const cellSize = 14;
+                const margin = cellSize * 4;
                 const size = qr.getModuleCount() * cellSize + margin * 2;
-                
+
+                const canvas = document.getElementById('gen-qrcode-canvas');
                 canvas.width = size;
                 canvas.height = size;
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, size, size);
                 ctx.fillStyle = '#000000';
-                
+
                 for (let row = 0; row < qr.getModuleCount(); row++) {
                     for (let col = 0; col < qr.getModuleCount(); col++) {
                         if (qr.isDark(row, col)) {
@@ -360,50 +397,69 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                         }
                     }
                 }
-                
+
                 document.getElementById('gen-payload-display').innerText = payload;
                 document.getElementById('gen-results').classList.remove('hidden');
-            } catch (e) { alert("Erreur signature."); }
+                document.getElementById('gen-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } catch (e) {
+                alert("Erreur lors de la signature : " + e.message);
+            }
         }
 
         function downloadQRCode() {
             const canvas = document.getElementById('gen-qrcode-canvas');
             const link = document.createElement('a');
             link.download = 'certificat_tracemenot.png';
+            // PNG sans perte — crucial pour la relecture par jsQR
+            link.href = canvas.toDataURL('image/png');
             link.click();
         }
 
+        // ────────────────────────────────────────────────
+        // Vérification
+        // ────────────────────────────────────────────────
         function executeVerification() {
-            let payload = document.getElementById('v-payload-input').value;
+            let payload = document.getElementById('v-payload-input').value.trim();
             if (!payload) return;
-            let lastIndex = payload.lastIndexOf(';');
-            if (lastIndex === -1) lastIndex = payload.lastIndexOf('||');
-            if (lastIndex === -1) { alert("Format invalide."); return; }
-            let dataPart = payload.substring(0, lastIndex);
-            let signaturePart = payload.substring(lastIndex + 1).replace(/[\n\r\s]/g, '');
+
+            // Séparateur principal : ||
+            let sepIndex = payload.lastIndexOf(SEP);
+
+            // Rétrocompatibilité avec l'ancien format ;
+            if (sepIndex === -1) sepIndex = payload.lastIndexOf(';');
+            const sepLen = (payload.lastIndexOf(SEP) !== -1) ? SEP.length : 1;
+
+            if (sepIndex === -1) { alert("Format invalide. Le payload doit contenir || entre le message et la signature."); return; }
+
+            const dataPart = payload.substring(0, sepIndex);
+            const signaturePart = payload.substring(sepIndex + sepLen).replace(/[\n\r\s]/g, '');
+
+            if (!dataPart || !signaturePart) { alert("Payload incomplet."); return; }
 
             try {
                 const md = forge.md.sha256.create();
                 md.update(dataPart, 'utf8');
                 const digest = md.digest();
-                
+
+                // Détection automatique Base64 / Hex
                 let sigBytes;
-                // Détection intelligente : Base64 ou Hex
                 if (/^[0-9a-fA-F]+$/.test(signaturePart) && signaturePart.length === 256) {
                     sigBytes = forge.util.hexToBytes(signaturePart);
                 } else {
                     sigBytes = forge.util.decode64(signaturePart);
                 }
-                
+
                 const publicKey = forge.pki.publicKeyFromPem(PUB_KEY_PEM);
                 const isValid = publicKey.verify(digest.bytes(), sigBytes);
-                
+
                 document.getElementById('v-clear-text').innerText = dataPart;
                 document.getElementById('v-full-signature').innerText = signaturePart;
+
                 const flow = document.getElementById('verification-flow');
                 const resBox = document.getElementById('v-result');
                 flow.classList.remove('hidden');
-                
+
                 if (isValid) {
                     resBox.innerText = "PRODUIT AUTHENTIQUE";
                     resBox.className = "p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 border-green-500 bg-green-50 text-green-700 uppercase shadow-2xl";
@@ -411,13 +467,21 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     resBox.innerText = "CONTREFAÇON";
                     resBox.className = "p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 border-red-500 bg-red-50 text-red-700 uppercase shadow-2xl";
                 }
+
                 flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (e) { alert("Erreur d'analyse."); }
+
+            } catch (e) {
+                alert("Erreur d'analyse : " + e.message);
+            }
         }
 
+        // ────────────────────────────────────────────────
+        // Init
+        // ────────────────────────────────────────────────
         window.onload = () => {
             if (typeof forge !== 'undefined') {
-                document.getElementById('status-indicator').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span> Connecté';
+                document.getElementById('status-indicator').innerHTML =
+                    '<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span> Connecté';
             }
         };
     </script>
