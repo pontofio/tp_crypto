@@ -103,7 +103,10 @@
                         <canvas id="scanner-canvas" class="hidden"></canvas>
                     </div>
                     <div class="text-center">
-                        <p id="scanner-status" class="text-[11px] font-black text-gray-300 uppercase tracking-widest">Cadrer le code</p>
+                        <p id="scanner-status" class="text-[11px] font-black text-gray-300 uppercase tracking-widest mb-4">Cadrer le code</p>
+                        <button id="btn-switch-camera" onclick="switchCamera()" class="hidden text-[10px] font-black uppercase tracking-widest bg-gray-100 px-6 py-3 rounded-full hover:bg-gray-200 transition">
+                            Inverser la caméra
+                        </button>
                     </div>
                 </div>
 
@@ -134,14 +137,14 @@
                     <div id="v-result" class="p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 shadow-2xl"></div>
                     
                     <div class="space-y-6">
-                        <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
-                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Message certifié</p>
-                            <div id="v-clear-text" class="text-lg font-bold text-gray-900 text-center leading-tight"></div>
+                        <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 text-center">
+                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Contenu authentifié</p>
+                            <div id="v-clear-text" class="text-lg font-bold text-gray-900 leading-tight"></div>
                         </div>
 
                         <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 overflow-hidden text-center">
-                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Signature sécurisée</p>
-                            <div id="v-full-signature" class="code-block text-xs leading-relaxed text-center"></div>
+                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Signature sécurisée</p>
+                            <div id="v-full-signature" class="code-block text-xs leading-relaxed"></div>
                         </div>
                     </div>
                 </div>
@@ -192,6 +195,8 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
         let stream = null;
         let isScanning = false;
         let currentMethod = 'scanner';
+        let videoDevices = [];
+        let currentDeviceIndex = 0;
 
         function switchTab(t) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
@@ -221,23 +226,40 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
 
         function resetVerificationMethod() { setVerifyMethod(currentMethod); }
 
+        async function getDevices() {
+            if (videoDevices.length > 0) return;
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                videoDevices = devices.filter(d => d.kind === 'videoinput');
+                if (videoDevices.length > 1) {
+                    document.getElementById('btn-switch-camera').classList.remove('hidden');
+                    // On initialise l'index à 1 pour la caméra arrière par défaut si dispo
+                    currentDeviceIndex = 1;
+                }
+            } catch (e) {
+                console.error("Erreur enumeration caméras");
+            }
+        }
+
+        async function switchCamera() {
+            if (videoDevices.length <= 1) return;
+            currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+            await startCamera();
+        }
+
         async function startCamera() {
             if (isScanning) stopCamera(); 
+            await getDevices();
             const status = document.getElementById('scanner-status');
             status.innerText = "Accès caméra...";
             
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                // On force la caméra 2 (index 1) comme demandé. Si absent, on prend la 1 (index 0).
-                const selectedDevice = videoDevices.length > 1 ? videoDevices[1] : videoDevices[0];
-                
+                const selectedDevice = videoDevices[currentDeviceIndex] || videoDevices[0];
                 const constraints = {
                     video: {
                         deviceId: selectedDevice ? { exact: selectedDevice.deviceId } : undefined,
                         width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: selectedDevice ? undefined : "environment"
+                        height: { ideal: 1280 }
                     }
                 };
 
@@ -268,7 +290,6 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
                 
-                // On cherche le séparateur ";" ou "||" pour valider un code TraceMeNot
                 if (code && code.data && (code.data.includes(';') || code.data.includes('||'))) {
                     stopCamera();
                     showScannedData(code.data);
@@ -289,17 +310,13 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     document.getElementById('upload-preview-container').classList.remove('hidden');
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
-                    
-                    // On essaie d'analyser l'image à une taille raisonnable pour jsQR
                     const maxDim = 1024;
                     let width = img.width;
                     let height = img.height;
                     if (width > maxDim || height > maxDim) {
                         const ratio = Math.min(maxDim / width, maxDim / height);
-                        width *= ratio;
-                        height *= ratio;
+                        width *= ratio; height *= ratio;
                     }
-                    
                     canvas.width = width;
                     canvas.height = height;
                     context.drawImage(img, 0, 0, width, height);
@@ -309,7 +326,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     if (code && code.data) {
                         showScannedData(code.data);
                     } else {
-                        alert("Impossible de lire le QR code. Essayez une image plus nette.");
+                        alert("Impossible de lire le QR code.");
                         document.getElementById('upload-preview-container').classList.add('hidden');
                     }
                 };
@@ -332,36 +349,23 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const digest = md.digest();
                 const privateKey = forge.pki.privateKeyFromPem(PRIV_KEY_PEM);
                 const signature = privateKey.sign(md);
-                
-                // Base64 est beaucoup plus compact que Hex pour le QR
                 const sigB64 = forge.util.encode64(signature);
                 const payload = `${data};${sigB64}`;
-                
-                // QR niveau M (15%) pour un bon compromis entre densité et robustesse
                 const qr = qrcode(0, 'M'); 
                 qr.addData(payload);
                 qr.make();
-                
                 const canvas = document.getElementById('gen-qrcode-canvas');
-                const cellSize = 12; // Plus gros modules pour faciliter le scan
+                const cellSize = 12;
                 const margin = cellSize * 2;
                 const size = qr.getModuleCount() * cellSize + margin * 2;
-                
-                canvas.width = size;
-                canvas.height = size;
+                canvas.width = size; canvas.height = size;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, size, size);
-                ctx.fillStyle = '#000000';
-                
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size); ctx.fillStyle = '#000000';
                 for (let row = 0; row < qr.getModuleCount(); row++) {
                     for (let col = 0; col < qr.getModuleCount(); col++) {
-                        if (qr.isDark(row, col)) {
-                            ctx.fillRect(col * cellSize + margin, row * cellSize + margin, cellSize, cellSize);
-                        }
+                        if (qr.isDark(row, col)) ctx.fillRect(col * cellSize + margin, row * cellSize + margin, cellSize, cellSize);
                     }
                 }
-                
                 document.getElementById('gen-payload-display').innerText = payload;
                 document.getElementById('gen-results').classList.remove('hidden');
                 document.getElementById('gen-results').scrollIntoView({ behavior: 'smooth' });
@@ -379,13 +383,9 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
         function executeVerification() {
             let payload = document.getElementById('v-payload-input').value;
             if (!payload) return;
-            
-            // On gère les deux types de séparateurs (rétrocompatibilité)
             let sep = payload.includes('||') ? '||' : ';';
             let parts = payload.split(sep);
-            
             if (parts.length < 2) { alert("Format invalide."); return; }
-            
             let dataPart = parts.slice(0, -1).join(sep);
             let signaturePart = parts[parts.length - 1].replace(/[\n\r\s]/g, '');
 
@@ -393,15 +393,7 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const md = forge.md.sha256.create();
                 md.update(dataPart, 'utf8');
                 const digest = md.digest();
-                
-                let sigBytes;
-                // Détection auto Base64 / Hex
-                if (/^[0-9a-fA-F]+$/.test(signaturePart) && signaturePart.length === 256) {
-                    sigBytes = forge.util.hexToBytes(signaturePart);
-                } else {
-                    sigBytes = forge.util.decode64(signaturePart);
-                }
-                
+                let sigBytes = /^[0-9a-fA-F]+$/.test(signaturePart) && signaturePart.length === 256 ? forge.util.hexToBytes(signaturePart) : forge.util.decode64(signaturePart);
                 const publicKey = forge.pki.publicKeyFromPem(PUB_KEY_PEM);
                 const isValid = publicKey.verify(digest.bytes(), sigBytes);
                 
