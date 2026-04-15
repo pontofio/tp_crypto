@@ -127,8 +127,8 @@
 
                 <div id="scanned-preview" class="hidden space-y-6 result-animate">
                     <div class="bg-blue-50 p-8 rounded-[2.5rem] border border-blue-100 text-center">
-                        <p class="text-[11px] font-black text-blue-600 uppercase mb-5 tracking-widest">Données extraites</p>
-                        <button onclick="executeVerification()" class="w-full bg-blue-600 text-white font-black py-6 rounded-2xl text-xs uppercase tracking-widest shadow-xl">Vérifier l'authenticité</button>
+                        <p class="text-[11px] font-black text-blue-600 uppercase mb-5 tracking-widest">Code détecté avec succès</p>
+                        <button onclick="executeVerification()" class="w-full bg-blue-600 text-white font-black py-6 rounded-2xl text-xs uppercase tracking-widest shadow-lg">Vérifier l'authenticité</button>
                         <button onclick="resetVerificationMethod()" class="w-full mt-4 text-[10px] font-bold text-blue-400 uppercase tracking-widest">Recommencer</button>
                     </div>
                 </div>
@@ -138,7 +138,7 @@
                     
                     <div class="space-y-6">
                         <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100 text-center">
-                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Contenu authentifié</p>
+                            <p class="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest">Contenu identifié</p>
                             <div id="v-clear-text" class="text-lg font-bold text-gray-900 leading-tight"></div>
                         </div>
 
@@ -235,11 +235,9 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const btn = document.getElementById('btn-switch-camera');
                 if (videoDevices.length > 1) {
                     btn.classList.remove('hidden');
-                    // On privilégie la caméra 2 (index 1) au premier chargement si disponible
                     if (!initializedIndex) {
                         currentDeviceIndex = 1;
                         initializedIndex = true;
-                        // On relance pour appliquer le changement d'index
                         await startCamera();
                     }
                 } else {
@@ -279,11 +277,9 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 requestAnimationFrame(tick);
                 status.innerText = "Scan actif";
                 
-                // On détecte les caméras après avoir eu la permission ( labels visibles )
                 await getDevices();
             } catch (err) { 
-                status.innerText = "Caméra bloquée."; 
-                // Fallback si la caméra demandée échoue
+                status.innerText = "Vérifiez les permissions."; 
                 if (currentDeviceIndex !== 0) {
                     currentDeviceIndex = 0;
                     startCamera();
@@ -398,26 +394,45 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
         }
 
         function executeVerification() {
-            let payload = document.getElementById('v-payload-input').value;
+            let payload = document.getElementById('v-payload-input').value.trim();
             if (!payload) return;
+            
             let sep = payload.includes('||') ? '||' : ';';
             let parts = payload.split(sep);
-            if (parts.length < 2) { alert("Format invalide."); return; }
+            const flow = document.getElementById('verification-flow');
+            const resBox = document.getElementById('v-result');
+            
+            if (parts.length < 2) { 
+                showFakeResult("FORMAT INVALIDE");
+                return; 
+            }
+            
             let dataPart = parts.slice(0, -1).join(sep);
             let signaturePart = parts[parts.length - 1].replace(/[\n\r\s]/g, '');
+
+            document.getElementById('v-clear-text').innerText = dataPart;
+            document.getElementById('v-full-signature').innerText = signaturePart;
 
             try {
                 const md = forge.md.sha256.create();
                 md.update(dataPart, 'utf8');
                 const digest = md.digest();
-                let sigBytes = /^[0-9a-fA-F]+$/.test(signaturePart) && signaturePart.length === 256 ? forge.util.hexToBytes(signaturePart) : forge.util.decode64(signaturePart);
+                
+                let sigBytes;
+                // Tentative de décodage Hex ou Base64
+                try {
+                    if (/^[0-9a-fA-F]+$/.test(signaturePart) && signaturePart.length === 256) {
+                        sigBytes = forge.util.hexToBytes(signaturePart);
+                    } else {
+                        sigBytes = forge.util.decode64(signaturePart);
+                    }
+                } catch(e) {
+                    throw new Error("Decoding failed");
+                }
+
                 const publicKey = forge.pki.publicKeyFromPem(PUB_KEY_PEM);
                 const isValid = publicKey.verify(digest.bytes(), sigBytes);
                 
-                document.getElementById('v-clear-text').innerText = dataPart;
-                document.getElementById('v-full-signature').innerText = signaturePart;
-                const flow = document.getElementById('verification-flow');
-                const resBox = document.getElementById('v-result');
                 flow.classList.remove('hidden');
                 
                 if (isValid) {
@@ -428,7 +443,22 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                     resBox.className = "p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 border-red-500 bg-red-50 text-red-700 uppercase shadow-2xl";
                 }
                 flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (e) { alert("Analyse impossible."); }
+            } catch (e) { 
+                // En cas d'erreur de signature modifiée/corrompue, on affiche CONTREFAÇON au lieu d'une erreur technique
+                flow.classList.remove('hidden');
+                resBox.innerText = "CONTREFAÇON";
+                resBox.className = "p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 border-red-500 bg-red-50 text-red-700 uppercase shadow-2xl";
+                flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        function showFakeResult(msg) {
+             const flow = document.getElementById('verification-flow');
+             const resBox = document.getElementById('v-result');
+             flow.classList.remove('hidden');
+             resBox.innerText = msg;
+             resBox.className = "p-12 rounded-[2.5rem] text-center font-black text-2xl tracking-tighter border-4 border-gray-400 bg-gray-50 text-gray-600 uppercase shadow-2xl";
+             flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         window.onload = () => {
