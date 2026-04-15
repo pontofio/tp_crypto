@@ -337,12 +337,12 @@ tt5YFBi62USW1xwVKI8rOnpJEa+G3j+KT8WSx18E9sxXR+xzKG1JoM44wy1k10bc
                 const sigB64 = forge.util.encode64(signature);
                 const payload = `${data};${sigB64}`;
                 
-                const qr = qrcode(0, 'M'); 
+                const qr = qrcode(0, 'L'); 
                 qr.addData(payload);
                 qr.make();
                 
                 const canvas = document.getElementById('gen-qrcode-canvas');
-                const cellSize = 10;
+                const cellSize = 12;
                 const margin = cellSize * 4; 
                 const size = qr.getModuleCount() * cellSize + margin * 2;
                 
